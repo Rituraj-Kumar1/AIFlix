@@ -1,91 +1,133 @@
+import Logo from "../Image/Logo.png";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { LOGO, SUPPORTED_LANGUAGES } from "../utils/constants";
 import { auth } from "../utils/firebase";
-import { addUser, removeUser } from "../utils/userSlice";
-import { toggleGptSearchView } from "../utils/gptSlice";
-import { changeLanguage } from "../utils/configSlice";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { addUser, removeUser } from "../store/userSlice";
+import { MULTI_LANG } from "../utils/constants";
+import { addLang } from "../store/configApp";
+import lang from "../utils/langConstants";
+import { addGptToggle } from "../store/gptSlice";
 
 const Header = () => {
-  const dispatch = useDispatch();
+  const gptview = useSelector((store) => store.gpt.gptSearchView);
+
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const langKey = useSelector((store) => store.configApp.lang);
+
+  const toggleGPTSearchView = () => {
+    dispatch(addGptToggle());
+  };
+
+  const handlelang = (e) => {
+    dispatch(addLang(e.target.value));
+  };
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {})
-      .catch((error) => {
-        navigate("/error");
-      });
+      .catch((error) => {});
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const { uid, email, displayName, photoURL } = user;
-        dispatch(
-          addUser({
-            uid: uid,
-            email: email,
-            displayName: displayName,
-            photoURL: photoURL,
-          })
-        );
-        navigate("/browse");
+        const { uid, email, displayName } = user;
+        dispatch(addUser({ uid: uid, email: email, displayName: displayName }));
+        if (window.location.pathname === "/") {
+          navigate("/browse");
+        }
       } else {
         dispatch(removeUser());
         navigate("/");
       }
     });
-
-    // Unsiubscribe when component unmounts
     return () => unsubscribe();
   }, []);
 
-  const handleGptSearchClick = () => {
-    // Toggle GPT Search
-    dispatch(toggleGptSearchView());
-  };
-
-  const handleLanguageChange = (e) => {
-    dispatch(changeLanguage(e.target.value));
-  };
-
   return (
-    <div className="absolute w-screen px-8 py-2 bg-gradient-to-b from-black z-10 flex flex-col md:flex-row justify-between">
-      <img className="w-44 mx-auto md:mx-0" src={LOGO} alt="logo" />
-      {user && (
-        <div className="flex p-2 justify-between">
-          {showGptSearch && (
-            <select
-              className="p-2 m-2 bg-gray-900 text-white"
-              onChange={handleLanguageChange}
+    <div className="bg-gradient-to-b from-black absolute w-full z-50 flex justify-between overflow-hidden items-center lg:px-10 md:px-10 sm:px-8 px-4">
+      <Link to={"/browse"}>
+        <img
+          className="lg:w-48 sm:w-28 w-20 md:w-40   md:py-6 py-4 lg:py-6"
+          src={Logo}
+          alt="logo"
+        ></img>
+      </Link>
+
+      <div className="flex flex-row justify-center items-center">
+        {user && (
+          <div className="flex justify-center items-center flex-row lg:gap-2 gap-0.5 sm:gap-1">
+            <span className="text-white pr-2 font-normal text-xs md:font-semibold md:text-lg lg:font-semibold lg:text-lg">
+              {lang[langKey].welcome}
+              {user.displayName}
+            </span>
+            {gptview ? (
+              <>
+                <button
+                  className="bg-purple-500 lg:text-base hidden md:block font-normal hover:opacity-80 py-1 px-2 rounded-md mr-1.5"
+                  onClick={toggleGPTSearchView}
+                >
+                  <i class="ri-home-4-line lg:pr-1 pr-0.5"></i>
+                  Home
+                </button>
+                <button
+                  className="bg-purple-500 text-sm md:hidden font-normal hover:opacity-80 py-0.5 px-1 rounded-md mr-0.5"
+                  onClick={toggleGPTSearchView}
+                >
+                  <i class="ri-home-4-line lg:pr-1 pr-0.5"></i>Home
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="bg-purple-500 lg:text-base hidden md:block font-normal hover:opacity-80 py-1 px-2 rounded-md mr-1.5"
+                  onClick={toggleGPTSearchView}
+                >
+                  <i class="ri-search-2-line pr-1"></i>
+                  {lang[langKey].gptSearch}
+                </button>
+                <button
+                  className="bg-purple-500 text-sm md:hidden font-normal hover:opacity-80 py-0.5 px-1 rounded-md mr-0.5"
+                  onClick={toggleGPTSearchView}
+                >
+                  <i class="ri-search-2-line lg:pr-1 pr-0.5"></i>GPT
+                </button>
+              </>
+            )}
+
+            <button
+              className="text-white hidden md:block lg:text-base md:text-base font-normal hover:opacity-80 py-1 px-1 rounded-md mr-2.5 bg-zinc-700"
+              onClick={handleSignOut}
             >
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <option key={lang.identifier} value={lang.identifier}>
-                  {lang.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            className="py-2 px-4 mx-4 my-2 bg-purple-800 text-white rounded-lg"
-            onClick={handleGptSearchClick}
-          >
-            {showGptSearch ? "Homepage" : "GPT Search"}
-          </button>
-          <img
-            className="hidden md:block w-12 h-12"
-            alt="usericon"
-            src={user?.photoURL}
-          />
-          <button onClick={handleSignOut} className="font-bold text-white ">
-            (Sign Out)
-          </button>
-        </div>
-      )}
+              <i class="ri-logout-box-r-line pr-0.5 lg:pr-1"></i>
+              {lang[langKey].signOut}
+            </button>
+            <button
+              className="text-white md:hidden  text-sm font-normal hover:opacity-80 py-0.5 px-1 rounded-md mr-0.5 bg-zinc-700"
+              onClick={handleSignOut}
+            >
+              <i class="ri-logout-box-r-line pr-0.5 lg:pr-1"></i>
+            </button>
+          </div>
+        )}
+        <select
+          className="bg-gray-300 text-black border cursor-pointer border-black sm:px-1.5 sm:py-1 px-0.5 py-0.5 lg:px-2 lg:py-1 md:px-2 md:py-1 rounded-md"
+          onChange={handlelang}
+        >
+          {MULTI_LANG.map((option) => (
+            <option
+              key={option.name}
+              className="text-black lg:px-2 lg:py-1 md:px-2 :px-1 :py-0.5 sm:px-1.5 sm:py-0.5 md:py-1"
+              value={option.identifier}
+            >
+              {option.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };

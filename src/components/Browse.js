@@ -1,22 +1,29 @@
+import { useDispatch, useSelector } from "react-redux";
+import useOnPlayingMovies from "../custom hooks/useOnPlayingMovies";
+import usePopularMovies from "../custom hooks/usePopularMovies";
+import useTopRatedMovies from "../custom hooks/useTopRatedMovies";
 import Header from "./Header";
-import useNowPlayingMovies from "../hooks/useNowPlayingMovies";
 import MainContainer from "./MainContainer";
 import SecondaryContainer from "./SecondaryContainer";
-import usePopularMovies from "../hooks/usePopularMovies";
-import GptSearch from "./GptSearch";
-import { useSelector } from "react-redux";
+import GPTSearchPage from "./GPTSearchPage";
+import { removegptMovieResult } from "../store/gptSlice";
 
 const Browse = () => {
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
-
-  useNowPlayingMovies();
+  useOnPlayingMovies();
   usePopularMovies();
+  useTopRatedMovies();
+
+  const gptview = useSelector((store) => store.gpt.gptSearchView);
+  const dispatch = useDispatch();
+  if (!gptview) {
+    dispatch(removegptMovieResult());
+  }
 
   return (
-    <div>
+    <div className="text-white w-screen">
       <Header />
-      {showGptSearch ? (
-        <GptSearch />
+      {gptview ? (
+        <GPTSearchPage />
       ) : (
         <>
           <MainContainer />
