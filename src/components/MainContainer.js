@@ -1,26 +1,22 @@
-import { useSelector } from "react-redux";
+import React from 'react'
 
-import VideoTitle from "./VideoTitle";
-import VideoBackground from "./VideoBackground";
+import { useSelector } from 'react-redux'
+import VideoTitle from './VideoTitle';
+import VideoBackground from './VideoBackground';
 
 const MainContainer = () => {
-  const movies = useSelector((store) => store.movie?.nowPlayingMovies);
+    const movies = useSelector(store => store.movies?.nowPlaying);
+    if (movies == null)
+        return;
+    let rand = Math.floor(Math.random() * 19);
+    const mainMovie = movies[rand];
+    const { original_title, overview, id } = mainMovie;
+    return (
+        <div>
+            <VideoTitle title={original_title} movieId={id} overview={overview} />
+            <VideoBackground id={id} />
+        </div>
+    )
+}
 
-  if (!movies) return null; // Return null or some loading indicator while waiting for movies
-
-  const movieInfo = movies[3];
-  const { original_title, overview, id } = movieInfo;
-
-  return (
-    <div className="relative ">
-      <div className="overflow-hidden">
-        <VideoBackground movieid={id} />
-      </div>
-      <div className="absolute top-0 ">
-        <VideoTitle original_title={original_title} overview={overview} />
-      </div>
-    </div>
-  );
-};
-
-export default MainContainer;
+export default MainContainer

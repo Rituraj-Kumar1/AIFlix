@@ -1,34 +1,31 @@
-import { useSelector } from "react-redux";
-import MovieList from "./MovieList";
-import search from "../Image/search.svg";
+import React from 'react'
+import MovieList from './MovieList'
 
-const GPTResult = () => {
-  const { movieNames, movieResults } = useSelector((store) => store.gpt);
-  if (!movieNames && !movieResults) {
+const GptResult = ({ searchedMovieList }) => {
+
     return (
-      <div className="h-1/12 xl:pt-2 md:pt-8 sm:pt-16 pt-20 w-12/12 flex gap-4 justify-center flex-col items-center">
-        <img
-          className="xl:w-80 md:w-72 sm:w-64 w-52 lg:w-80"
-          src={search}
-          alt="Search Img"
-        ></img>
-        <h1 className="xl:text-2xl lg:text-2xl sm:text-lg text-lg md:text-xl font-semibold">
-          No Search Results..!
-        </h1>
-      </div>
-    );
-  }
+        <div className='w-screen absolute left-0 top-1/3 max-h-screen p-5'>
+            {searchedMovieList.length != 0 && (
+                <div className='bg-black bg-opacity-70 overflow-y-auto max-h-[75vh] rounded-lg shadow-2xl p-2 md:p-8'>
+                    <p className='text-white md:text-4xl font-extrabold text-center mb-8'>
+                        Results
+                    </p>
+                    {searchedMovieList?.map((movieArray, index) => {
+                        return movieArray.length !== 0 && (
+                            <div key={index} className="mb-6">
+                                <MovieList
+                                    movieList={movieArray}
+                                    Title={movieArray[0]?.original_title}
+                                    className="mb-4"
+                                />
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+        </div>
 
-  return (
-    <div className="xl:px-16 md:px-8 sm:px-4 px-1.5 lg:px-12">
-      {movieNames?.map((movieName, index) => (
-        <MovieList
-          key={movieName}
-          title={movieName}
-          movie={movieResults?.[index]?.results}
-        />
-      ))}
-    </div>
-  );
-};
-export default GPTResult;
+
+    )
+}
+export default GptResult;

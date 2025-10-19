@@ -1,34 +1,46 @@
-import Browse from "./Browse";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./Login";
-import { createBrowserRouter } from "react-router-dom";
-import { RouterProvider } from "react-router-dom";
-import MovieInfo from "./MovieInfo";
-import MovieDemo from "./MovieDemo";
-
+import Browse from "./Browse";
+import MoviePage from "./MoviePage";
+import GenHeader from "./GenHeader";
+import GptSearch from "./GptSearch";
+import MainContainer from "./MainContainer";
+import SecondaryContainer from "./SecondaryContainer";
+import Header from "./Header";
 const Body = () => {
-  const appRouter = createBrowserRouter([
-    {
-      path: "/",
-      element: <Login />,
-    },
-    {
-      path: "/browse",
-      element: <Browse />,
-    },
-    {
-      path: "/movieinfo/:id",
-      element: <MovieInfo />,
-    },
-    {
-      path: "/moviedemo",
-      element: <MovieDemo />,
-    },
-  ]);
 
-  return (
-    <>
-      <RouterProvider router={appRouter} />
-    </>
-  );
-};
+    const appRouter = createBrowserRouter([
+        {
+            path: "/",
+            element: <Login />
+        },
+        {
+            path: "/browse",
+            element: <Browse />,
+            children: [
+                {
+                    path: "/browse/search",
+                    element: <GptSearch />
+                }
+            ]
+        },
+        {
+            path: "/search",
+            element: <GptSearch />
+
+
+        },
+
+        {
+            path: "/movie/:movieid",
+            element: [<GenHeader />, <MoviePage />]
+        }
+    ]
+    );
+    return (
+        <div >
+            <RouterProvider router={appRouter} />
+        </div>
+    );
+}
 export default Body;
